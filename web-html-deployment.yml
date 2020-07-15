@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: testing-html
+spec:
+   replicas: 2
+   selector:
+     matchLabels:
+        env: testing
+   template:
+     metadata:
+        name: web-html
+        labels:
+            env: testing
+     spec:
+        containers:
+          - name: web-html
+            image: httpd
+            volumeMounts:
+               - name: testing-html-vol
+                 mountPath: /var/log/httpd/
+        volumes:
+         - name: testing-html-vol
+           persistentVolumeClaim:
+                 claimName: web-html
