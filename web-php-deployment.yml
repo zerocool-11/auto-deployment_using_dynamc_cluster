@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: testing-php
+spec:
+   replicas: 2
+   selector:
+     matchLabels:
+        env: testing
+   template:
+     metadata:
+        name: web-php
+        labels:
+            env: testing
+     spec:
+        containers:
+        - name: web-php
+          image: vimal13/apache-webserver-php
+          volumeMounts:
+          - name: testing-php-vol
+            mountPath: /var/log/httpd/
+        volumes:
+        - name: testing-php-vol
+          persistentVolumeClaim:
+            claimName: web-php
