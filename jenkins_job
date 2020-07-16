@@ -1,0 +1,84 @@
+#jenkins job-
+
+#!/bin/bash
+git clone https://github.com/zerocool-11/dev_test.git 
+cd dev_test
+file=$(echo  $(ls index*))
+x=$( echo  $file |awk -F . '{if (NF>1) {print $NF}}' )
+if [[ $x == php ]]
+then
+curl https://raw.githubusercontent.com/zerocool-11/auto-deployment_using_dynamc_cluster/master/web-php-deployment.yml -o web-php-deployment.yml
+echo "dep clonning done"
+curl https://raw.githubusercontent.com/zerocool-11/auto-deployment_using_dynamc_cluster/master/web-php.yml -o web-php.yml
+echo "pvc cloning done"
+kubectl create -f web-php.yml
+echo "launching php-server"
+  if sudo kubectl get deployments | grep testing-php
+  then
+  sudo kubectl  delete deployment testing-php
+  sudo kubectl create -f web-php-deployment.yml
+  sleep 180
+  pod=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[1].metadata.name}")
+  pod1=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[0].metadata.name}")
+  sudo kubectl cp * $pod1:/var/www/html/
+  sudo kubectl cp  * $pod:/var/www/html/
+  
+    if sudo kubectl get service web-php
+    then
+    sudo kubectl delete service web-php
+    sudo kubectl expose deployment testing-php --name=web-php --type=NodePort    --port=80
+    else
+    sudo kubectl expose deployment testing-php --name=web-php --type=NodePort    --port=80
+    fi
+  else
+  sudo kubectl create -f web-php-deployment.yml
+  sleep 180
+  pod=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[1].metadata.name}")
+  pod1=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[0].metadata.name}")
+  sudo kubectl cp * $pod1:/var/www/html/
+  sudo kubectl cp  * $pod:/var/www/html/
+    if sudo kubectl get service web-php
+    then
+    sudo kubectl delete service web-php
+    sudo kubectl expose deployment testing-php --name=web-php --type=NodePort    --port=80
+    else
+    sudo kubectl expose deployment testing-php --name=web-php --type=NodePort    --port=80
+    fi
+  fi
+else
+curl https://raw.githubusercontent.com/zerocool-11/auto-deployment_using_dynamc_cluster/master/web-html-deployment.yml -o web-php-deployment.yml
+curl https://raw.githubusercontent.com/zerocool-11/auto-deployment_using_dynamc_cluster/master/web-html.yml -o web-html.yml
+kubectl create -f web-html.yml
+echo  "launching html server"
+  if sudo kubectl get deployments | grep testing-html
+  then
+  sudo kubectl  delete deployment testing-html
+  sudo kubectl create -f web-html-deployment.yml 
+  sleep 180
+  pod=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[1].metadata.name}")
+  pod1=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[0].metadata.name}")
+  sudo kubectl cp * $pod1:/usr/local/apache2/htdocs/
+  sudo kubectl cp  * $pod:/usr/local/apache2/htdocs/  
+    if sudo kubectl get service web-html
+    then
+    sudo kubectl delete service web-html
+    sudo kubectl expose deployment testing-html --name=web-html --type=NodePort    --port=80
+    else
+    sudo kubectl expose deployment testing-html --name=web-html --type=NodePort    --port=80
+    fi
+  else
+  sudo kubectl create -f web-html-deployment.yml
+  sleep 180
+  pod=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[1].metadata.name}")
+  pod1=$(sudo kubectl get pod -l env=testing -o jsonpath="{.items[0].metadata.name}")
+  sudo kubectl cp  * $pod1:/usr/local/apache2/htdocs/
+  sudo kubectl cp  * $pod:/usr/local/apache2/htdocs/
+    if sudo kubectl get service web-html
+    then
+    sudo kubectl delete service web-html
+    sudo kubectl expose deployment testing-html --name=web-html --type=NodePort    --port=80
+    else
+    sudo kubectl expose deployment testing-html --name=web-html --type=NodePort    --port=80
+    fi
+  fi
+fi
